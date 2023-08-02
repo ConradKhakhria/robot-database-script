@@ -36,7 +36,7 @@ def handle_database(func):
     Notes:
     Any function which uses this wrapper must take a 
     """
-    def wrapper(config_filename: str):
+    def wrapper(*args):
         conn = pyodbc.connect(
             "DRIVER={ODBC Driver 18 for SQL Server};"
             f"SERVER={DB_ADDR}"
@@ -95,13 +95,16 @@ def get_experiment_id(cursor: pyodbc.Cursor, user_defined_id: str) -> int:
 """ Database interaction """
 
 @handle_database
-def create_new_experiment(cursor: pyodbc.Cursor, config_filename: str):
+def create_new_experiment(config_filename: str, cursor: pyodbc.Cursor = None):
     """
     Adds a new experiment to the database
     
     args:
     - config_filename: the name of the config file of the experiment
       to be added to the database
+    - cursor: a named parameter which is passed to the function
+      by the @handle_database decorator, which represents a handle
+      to the database
 
     This method will raise an exception if the config file doesn't
     contain the required parameters
@@ -133,13 +136,16 @@ def create_new_experiment(cursor: pyodbc.Cursor, config_filename: str):
 
 
 @handle_database
-def delete_experiment(cursor: pyodbc.Cursor, config_filename: str):
+def delete_experiment(config_filename: str, cursor: pyodbc.Cursor):
     """
     Removes an experiment from the database 
 
     args:
     - config_filename: the name of the config file of the experiment
       to be deleted
+    - cursor: a named parameter which is passed to the function
+      by the @handle_database decorator, which represents a handle
+      to the database
 
     This method raises an exception if the UserDefinedID is not found
     in the database
