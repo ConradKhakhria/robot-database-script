@@ -1,6 +1,6 @@
 # This is a simple script for creating and deleting experiments in the Microsoft SQL database.
 
-This utility offers three commands
+This utility has two commands
 - new-experiment [filename]:
     This adds a new experiment to the database using the
     parameters given in the config file supplied
