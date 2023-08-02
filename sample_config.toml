@@ -1,0 +1,20 @@
+[info]
+UserDefinedID = "ChFl_50Percent"
+Note = "Test of the fastest growing selection"
+ScheduledToRun = false
+
+[parameters]
+BackgroundOD = 0.036
+InoculationOD = 0.03
+MaxIteration = 2
+ODConversionFactor = 2.52
+FreezeVolume = 0.5
+TargetWellVolume = 700
+V_OD_Sample = 40
+TopFractionToPropagate = 0.5
+FreezeGeneration = 1 # I don't know if this is a boolean
+UseFluorescence = false
+GFP_scale = 4669.1
+GFP_RFPdamping = 773.1
+RFP_scale = 2262.3
+RFP_GFPdamping = 305.0
