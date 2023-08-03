@@ -2,7 +2,7 @@ HELP_MESSAGE = """
 This is a simple script for creating and deleting experiments
 in the Microsoft SQL database.
 
-This utility offers three commands:
+This utility offers four commands:
 
 - new-experiment -f [filename]:
     This adds a new experiment to the database using the
@@ -12,12 +12,38 @@ This utility offers three commands:
     This removes an experiment from the database using the
     experiment name given in the config file
 
+- list-backups:
+    This prints a list of every available backup file with the date
+    and time that they were created. There are a number of flags
+    that can be used to filter these results:
+
+    --start : an ISO 8601* datetime format for the earliest date and
+        time to search from
+    --end : same as 'start' except as the latest date and time to
+        search from
+    --regex : this is a Pearl-style regular expression for matching
+        the filename (not including path or extension)
+
+    Sample querys:
+        > python3 experiment_setup.py list-backups --start 2023-02-11 --end 2023-04-01
+        This will list all backups from between the 11th of February and the 1st of
+        April 2023
+
+        > python3 experiment_setup.py list-backups --start 2023-06-14T14:32:00
+        This will list all backups from after the 14th of June 2023 at 2:32:00PM
+
+        > python3 experiment_setup.py list-backups --regex .*50_Percent.*
+        This will list all backups containing the substring '50_Percent'
+
 - help:
     This prints the help message you are currently looking at :)
 """
 
 import builtins
+from datetime import datetime
+import pathlib
 import pyodbc
+import re
 import sys
 import tomllib
 
@@ -144,7 +170,7 @@ def parse_arguments(argument_list: [str]) -> ([str], {str : str}):
     return sequential, flags_dict
 
 
-""" Database interaction """
+""" Commands """
 
 @handle_database
 def create_new_experiment(flags: {str : str}, cursor: pyodbc.Cursor = None):
@@ -210,20 +236,65 @@ def delete_experiment(flags: {str : str}, cursor: pyodbc.Cursor = None):
     cursor.execute("DELETE FROM ExperimentParameters WHERE ExperimentID = ?", experiment_id)
 
 
+def list_database_backups(flags: {str : str}):
+    """
+    Prints a list of all backups, filtered according to
+    the command line flags supplied.
+
+    args:
+    - flags: the key/value flags from the command line arguments
+
+    note:
+    This method will stop working in the year 9999CE
+    """
+    raise NotImplementedError("I don't yet know where backups are stored")
+
+    backup_dir = pathlib.Path("C:\\something")
+    backup_files = []
+
+    # Get search constraints from flags
+    start = datetime.fromisoformat(flags.get("--start", "1970-01-01T00:00:00")).timestamp()
+    end   = datetime.fromisoformat(flags.get("--end", "9999-01-01T00:00:00")).timestamp()
+    regex = re.compile(flags.get("--regex", r".*"))
+
+    for filepath in backup_dir.iterdir():
+        if start <= (creation_date := filepath.stat().st_ctime) <= end:
+            if filepath.suffix == ".bak" and regex.match(filepath.stem):
+                backup_files.append((filepath, creation_date))
+
+    for filepath, creation_date in sorted(backup_files, key=lambda p : p[1]):
+        creation_date = datetime.fromtimestamp(creation_date).isoformat()
+        print(f"{creation_date} - '{filepath}'")
+
+
+
 # @handle_database
-# def restore_experiment(config: dict, )
+# def restore_from_backup(flags: {str : str}, cursor: pyodbc.Cursor = None):
+#     """
+#     Restores an experiment from a specific backup file
+# 
+#     args:
+#     - flags: the key/value flags from the command line arguments
+#     """
+#     if (backup_filename := flags.get("-f")) is None:
+#         
+# 
+# 
+#     raise NotImplementedError()
 
 
 if __name__ == "__main__":
     args, flags = parse_arguments(sys.argv[1:])
 
     match args:
-        case ["new-experiment"]:
-            create_new_experiment(flags)
         case ["delete-experiment"]:
             delete_experiment(flags)
         case ["help"]:
             print(HELP_MESSAGE)
+        case ["list-backups"]:
+            list_database_backups(flags)
+        case ["new-experiment"]:
+            create_new_experiment(flags)
         case [command]:
             raise EnvironmentError(f"Unknown command {command}\n\n{HELP_MESSAGE}")
         case []:
