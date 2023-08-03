@@ -63,7 +63,9 @@ def handle_database(func):
 
 def fix_sql_value_types(value):
     """
-    Converts Python values to their appropriate SQL types
+    Converts Python values to their appropriate SQL types.
+    THIS NEEDS TO BE USED FOR ANY VALUE INSERTED INTO THE
+    DATABASE.
 
     args:
     - value: the value whose type will be converted.
@@ -96,7 +98,7 @@ def get_experiment_id(cursor: pyodbc.Cursor, user_defined_id: str) -> int:
     return cursor.execute(query).fetchone()
 
 
-def load_experiment_config(flags: {str : str}) -> {str : {str : str}}:
+def load_experiment_config(flags: {str : str}) -> dict:
     """
     Gets the config filename and loads the experiment config
 
@@ -145,13 +147,12 @@ def parse_arguments(argument_list: [str]) -> ([str], {str : str}):
 """ Database interaction """
 
 @handle_database
-def create_new_experiment(config: {str : {str : str}}, cursor: pyodbc.Cursor = None):
+def create_new_experiment(flags: {str : str}, cursor: pyodbc.Cursor = None):
     """
     Adds a new experiment to the database
     
     args:
-    - config_filename: the configuration data of the experiment
-      to be added to the database
+    - flags: the key/value flags from the command line arguments
     - cursor: a named parameter which is passed to the function
       by the @handle_database decorator, which represents a handle
       to the database
@@ -159,6 +160,8 @@ def create_new_experiment(config: {str : {str : str}}, cursor: pyodbc.Cursor = N
     This method will raise an exception if the config file doesn't
     contain the required parameters
     """
+
+    config = load_experiment_config(flags)
 
     # Add experiment info
     info_field_names  = config["info"].keys()
@@ -183,12 +186,12 @@ def create_new_experiment(config: {str : {str : str}}, cursor: pyodbc.Cursor = N
 
 
 @handle_database
-def delete_experiment(config: {str : {str : str}}, cursor: pyodbc.Cursor = None):
+def delete_experiment(flags: {str : str}, cursor: pyodbc.Cursor = None):
     """
     Removes an experiment from the database 
 
     args:
-    - config: the configuration data of the experiment to be deleted
+    - flags: the key/value flags from the command line arguments
     - cursor: a named parameter which is passed to the function
       by the @handle_database decorator, which represents a handle
       to the database
@@ -198,6 +201,8 @@ def delete_experiment(config: {str : {str : str}}, cursor: pyodbc.Cursor = None)
     """
     raise NotImplementedError("I need to read David's 'DeleteExperiment' macro")
 
+    config = load_experiment_config(flags)
+
     user_defined_id = config["info"]["UserDefinedID"]
     experiment_id = get_experiment_id(cursor, user_defined_id)
 
@@ -205,14 +210,18 @@ def delete_experiment(config: {str : {str : str}}, cursor: pyodbc.Cursor = None)
     cursor.execute("DELETE FROM ExperimentParameters WHERE ExperimentID = ?", experiment_id)
 
 
+# @handle_database
+# def restore_experiment(config: dict, )
+
+
 if __name__ == "__main__":
     args, flags = parse_arguments(sys.argv[1:])
 
     match args:
         case ["new-experiment"]:
-            create_new_experiment(load_experiment_config(flags))
+            create_new_experiment(flags)
         case ["delete-experiment"]:
-            delete_experiment(load_experiment_config(flags))
+            delete_experiment(flags)
         case ["help"]:
             print(HELP_MESSAGE)
         case [command]:
