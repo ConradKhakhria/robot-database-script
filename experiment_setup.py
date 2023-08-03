@@ -29,9 +29,9 @@ def handle_database(func):
     """
     Decorator function for any function which connects to the database
 
-    This decorator handles database connections, commits, and disconnection.
-    It should be applied to every function which wants to make changes to the
-    database.
+    This decorator handles database connections, commits, and
+    disconnection. It should be applied to every function which wants
+    to make changes to the database.
 
     Notes:
     Any function which uses this wrapper must take a 
@@ -65,7 +65,8 @@ def fix_sql_value_types(value):
     args:
     - value: the value whose type will be converted.
 
-    This means converting bools to ints and then everything to strings
+    This means converting boolean values into integer values,
+    and then all values are converted to strings
     """
     match type(value):
         case builtins.bool:
@@ -90,6 +91,16 @@ def get_experiment_id(cursor: pyodbc.Cursor, user_defined_id: str) -> int:
     query = "SELECT * FROM Experiments WHERE UserDefinedID = " + user_defined_id
 
     return cursor.execute(query).fetchone()
+
+
+def parse_arguments(argument_list: [str]):
+    """
+    Turns the argument list into a dictionary of flags and
+    a 
+
+    args:
+    - argument_list: the list of arguments to parse
+    """
 
 
 """ Database interaction """
