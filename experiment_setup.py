@@ -115,10 +115,10 @@ def load_experiment_config(flags: {str : str}) -> {str : {str : str}}:
     raise KeyError("No config filename given")
 
 
-def parse_arguments(argument_list: [str]):
+def parse_arguments(argument_list: [str]) -> ([str], {str : str}):
     """
-    Turns the argument list into a dictionary of flags and
-    a 
+    Turns the argument list into a list of sequential arguments
+    and a dictionary of flags with their keys.
 
     args:
     - argument_list: the list of arguments to parse
