@@ -22,7 +22,7 @@ This utility has three commands
         the filename (not including path or extension)
 
     Sample querys:
-        `> python3 experiment_setup.py list-backups --start 2023-02-11 --end 2023-04-01``
+        `> python3 experiment_setup.py list-backups --start 2023-02-11 --end 2023-04-01`
         This will list all backups from between the 11th of February and the 1st of
         April 2023
 
