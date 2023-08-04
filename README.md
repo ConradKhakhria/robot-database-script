@@ -32,3 +32,6 @@ This utility has three commands
 
     - `> python3 experiment_setup.py list-backups --regex .*50_Percent.*`
     This will list all backups containing the substring '50_Percent'
+
+- restore-from-backup [filename]:
+    This restores the database from the given backup file
