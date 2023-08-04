@@ -4,11 +4,11 @@ in the Microsoft SQL database.
 
 This utility offers five commands:
 
-- new-experiment -f [filename]:
+- new-experiment [filename]:
     This adds a new experiment to the database using the
     parameters given in the config file supplied
 
-- delete-experiment -f [filename]:
+- delete-experiment [filename]:
     This removes an experiment from the database using the
     experiment name given in the config file
 
