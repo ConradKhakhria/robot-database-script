@@ -1,6 +1,6 @@
 # This is a simple script for creating and deleting experiments in the Microsoft SQL database.
 
-This utility has three commands
+## Commands
 - new-experiment [filename]:
     This adds a new experiment to the database using the
     parameters given in the config file supplied
@@ -35,3 +35,6 @@ This utility has three commands
 
 - restore-from-backup [filename]:
     This restores the database from the given backup file
+
+## Status
+Currently none of these have been tested with the actual database
