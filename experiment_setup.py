@@ -2,7 +2,7 @@ HELP_MESSAGE = """
 This is a simple script for creating and deleting experiments
 in the Microsoft SQL database.
 
-This utility offers four commands:
+This utility offers five commands:
 
 - new-experiment -f [filename]:
     This adds a new experiment to the database using the
@@ -35,6 +35,13 @@ This utility offers four commands:
         > python3 experiment_setup.py list-backups --regex .*50_Percent.*
         This will list all backups containing the substring '50_Percent'
 
+    *ISO 8601 means one of the following two date formats:
+    1. '2023-04-15' for the 15th of April 2023
+    2. '2023-04-15T16:43:02' for 4:43:02PM on the 15th of April 2023
+
+- restore-from-backup [filename]:
+    This restores the database from the given backup file
+
 - help:
     This prints the help message you are currently looking at :)
 """
@@ -47,7 +54,9 @@ import re
 import sys
 import tomllib
 
-# Database authentication
+
+# Some (constant) globals
+BACKUP_DIRECTORY = pathlib.Path("C:\\something")
 DB_ADDR = "test"
 DB_NAME = "test"
 DB_UID = "user"
@@ -63,7 +72,8 @@ def handle_database(func):
     to make changes to the database.
 
     Notes:
-    Any function which uses this wrapper must take a 
+    Any function which uses this wrapper must take a named cursor
+    parameter
     """
     def wrapper(*args):
         conn = pyodbc.connect(
@@ -90,14 +100,15 @@ def handle_database(func):
 def fix_sql_value_types(value):
     """
     Converts Python values to their appropriate SQL types.
-    THIS NEEDS TO BE USED FOR ANY VALUE INSERTED INTO THE
+
+    This means converting boolean values into integer values,
+    and then all values are converted to strings.
+    
+    THIS FUNCTION MUST BE USED FOR ANY VALUE INSERTED INTO THE
     DATABASE.
 
     args:
     - value: the value whose type will be converted.
-
-    This means converting boolean values into integer values,
-    and then all values are converted to strings
     """
     match type(value):
         case builtins.bool:
@@ -249,7 +260,7 @@ def list_database_backups(flags: {str : str}):
     """
     raise NotImplementedError("I don't yet know where backups are stored")
 
-    backup_dir = pathlib.Path("C:\\something")
+    global BACKUP_DIRECTORY
     backup_files = []
 
     # Get search constraints from flags
@@ -257,7 +268,7 @@ def list_database_backups(flags: {str : str}):
     end   = datetime.fromisoformat(flags.get("--end", "9999-01-01T00:00:00")).timestamp()
     regex = re.compile(flags.get("--regex", r".*"))
 
-    for filepath in backup_dir.iterdir():
+    for filepath in BACKUP_DIRECTORY.iterdir():
         if start <= (creation_date := filepath.stat().st_ctime) <= end:
             if filepath.suffix == ".bak" and regex.match(filepath.stem):
                 backup_files.append((filepath, creation_date))
@@ -267,20 +278,36 @@ def list_database_backups(flags: {str : str}):
         print(f"{creation_date} - '{filepath}'")
 
 
+@handle_database
+def restore_from_backup(arguments: [str], cursor: pyodbc.Cursor = None):
+    """
+    Restores an experiment from a specific backup file
 
-# @handle_database
-# def restore_from_backup(flags: {str : str}, cursor: pyodbc.Cursor = None):
-#     """
-#     Restores an experiment from a specific backup file
-# 
-#     args:
-#     - flags: the key/value flags from the command line arguments
-#     """
-#     if (backup_filename := flags.get("-f")) is None:
-#         
-# 
-# 
-#     raise NotImplementedError()
+    args:
+    - arguments: the sequential args from the command line
+    """
+    global BACKUP_DIRECTORY
+
+    if len(arguments) == 2:
+        backup_filepath = pathlib.Path(arguments[1])
+    else:
+        raise SyntaxError(
+            "Bad syntax - expected the following\n"
+            "> python3 experiment_setup.py restore-from-backup [filename]"
+        )
+
+    if not backup_filepath.is_absolute():
+        backup_filepath = BACKUP_DIRECTORY / backup_filepath
+
+    check = input(
+        "Are you sure that this is the correct filename? '{backup_filepath}'\n"
+        "type 'yes' to confirm: "
+    )
+
+    if check == "yes":
+        raise NotImplementedError("I don't yet know the scheme for restoring experiments")
+    else:
+        print("The database has not been changed. Goodbye :)")
 
 
 if __name__ == "__main__":
@@ -295,6 +322,8 @@ if __name__ == "__main__":
             list_database_backups(flags)
         case ["new-experiment"]:
             create_new_experiment(flags)
+        case ["restore-from-backup"]:
+            restore_from_backup(args)
         case [command]:
             raise EnvironmentError(f"Unknown command {command}\n\n{HELP_MESSAGE}")
         case []:
