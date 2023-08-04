@@ -22,7 +22,8 @@ This utility offers five commands:
     --end : same as 'start' except as the latest date and time to
         search from
     --regex : this is a Pearl-style regular expression for matching
-        the filename (not including path or extension)
+        the filename (not including path or extension). The regex
+        must be surrounded with a '/' character
 
     Sample querys:
         > python3 experiment_setup.py list-backups --start 2023-02-11 --end 2023-04-01
@@ -32,7 +33,7 @@ This utility offers five commands:
         > python3 experiment_setup.py list-backups --start 2023-06-14T14:32:00
         This will list all backups from after the 14th of June 2023 at 2:32:00PM
 
-        > python3 experiment_setup.py list-backups --regex .*50_Percent.*
+        > python3 experiment_setup.py list-backups --regex /.*50_Percent.*/
         This will list all backups containing the substring '50_Percent'
 
     *ISO 8601 means one of the following two date formats:
@@ -257,7 +258,7 @@ def list_database_backups(flags: {str : str}):
     # Get search constraints from flags
     start = datetime.fromisoformat(flags.get("--start", "1970-01-01T00:00:00")).timestamp()
     end   = datetime.fromisoformat(flags.get("--end", "9999-01-01T00:00:00")).timestamp()
-    regex = re.compile(flags.get("--regex", r".*"))
+    regex = re.compile(flags.get("--regex", r"/.*/")[1:-1]) # Simply strip the slashes
 
     for filepath in BACKUP_DIRECTORY.iterdir():
         if start <= (creation_date := filepath.stat().st_ctime) <= end:

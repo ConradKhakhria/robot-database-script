@@ -21,7 +21,8 @@
         search from
 
     --regex : this is a Pearl-style regular expression for matching
-        the filename (not including path or extension)
+        the filename (not including path or extension). The regex
+        must be surrounded with a '/' character
 
     Sample querys:
     - `> python3 experiment_setup.py list-backups --start 2023-02-11 --end 2023-04-01`
@@ -30,7 +31,7 @@
     - `> python3 experiment_setup.py list-backups --start 2023-06-14T14:32:00`
     This will list all backups from after the 14th of June 2023 at 2:32:00PM
 
-    - `> python3 experiment_setup.py list-backups --regex .*50_Percent.*`
+    - `> python3 experiment_setup.py list-backups --regex /.*50_Percent.*/`
     This will list all backups containing the substring '50_Percent'
 
 - restore-from-backup [filename]:
